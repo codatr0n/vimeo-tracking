@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Vimeo player - custom impression tracking</title>
+    <style>
+        html,
+        body,
+        * {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Embedded Vimeo player tracking</h1>
+    <p>This page illustrates how to implement 3rd party custom impressions tracking on an embedded Vimeo player</p>
+
+    <!-- Embed code from Vimeo needs an added id="vimeoplayer" -->
+    <iframe src="https://player.vimeo.com/video/361008862" id="vimeoplayer" width="640" height="640" frameborder="0"
+        allow="autoplay; fullscreen" allowfullscreen></iframe>
+
+    <!-- Add Vimeo player SDK -->
+    <script src="https://player.vimeo.com/api/player.js"></script>
+
+    <script>
+        // Paste the impressions tracker into variable impr_tracker
+        var impr_tracker =
+            "https://ad.doubleclick.net/ddm/trackimp/N8897.3693096WOMAN.DK-SPONSPARTN/B23221576.257414860;dc_trk_aid=453305545;dc_trk_cid=122713150;ord=[timestamp];dc_lat=;dc_rdid=;tag_for_child_directed_treatment=;tfua=?";
+
+        // get the id of the iframe where the player is embedded
+        var iframe = document.getElementById("vimeoplayer");
+
+        // Create new instance of Vimeo Player object
+        var player = new Vimeo.Player(iframe);
+
+        player.on('play', function () {
+            console.log('Playing the video');
+
+            var timestamp = new Date().getTime(); // create timestamp for cache buster
+
+            var tracker = document.createElement("img");
+            tracker.src = impr_tracker.replace('[timestamp]',
+                timestamp); // insert timestamp in impr_tracker url
+            tracker.border = "0";
+            tracker.width = "1";
+            tracker.height = "1";
+
+            var vimeoParent = iframe.parentNode; // find element where the tracker should be inserted
+            vimeoParent.insertBefore(tracker, iframe.nextSibling); // insert tracker element in DOM
+            console.log('Called impression tracker');
+        });
+    </script>
+</body>
+
+</html>
