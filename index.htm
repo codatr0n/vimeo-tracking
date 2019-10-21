@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>Generate Vimeo play tracking</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-group-text {
+            min-width: 150px;
+            font-weight: bold;
+        }
+
+
+        .input-group textarea {
+            height: auto;
+            font-family: monospace;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Generate Vimeo play tracking</h1>
+        <form action="javascript:generate_script();">
+
+            <label for="vimeo_embed">Paste embed code from Vimeo here:</label>
+            <div class="input-group"> 
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Vimeo embed</span>
+                </div>
+                <textarea rows=5 class="form-control" id="vimeo_embed" aria-label="Vimeo embed"></textarea>
+            </div>
+
+            <label for="view_tracker">Paste view tracker code here:</label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">View tracker</span>
+                </div>
+                <textarea rows=5 class="form-control" id="view_tracker" aria-label="View tracker"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Generate script</button>
+
+        </form>
+
+        <br><br>
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Ready script</span>
+            </div>
+            <textarea rows=30 wrap="off" id="result_script" class="form-control" aria-label="Ready script"></textarea>
+        </div>
+        <button class="btn btn-success" onClick='javascript:copy_to_clipboard();'>Copy code</button>
+
+    </div>
+    <br><br>
+
+    <script>
+        function get_values() {
+            var vimeo_code = document.getElementById('vimeo_embed').value;
+            vimeo_code = vimeo_code.substr(0, vimeo_code.indexOf(' ')) + ' id="vimeoplayer"' + vimeo_code.substr(vimeo_code.indexOf(' '), vimeo_code.length)
+            var view_tracker = document.getElementById('view_tracker').value.split('"')[1];
+
+
+            data = {}; 
+            data.vimeo_code = vimeo_code;
+            data.view_tracker = view_tracker;
+            data.empty = '';
+            return data;
+        }
+
+        function make_script_markup(data) {
+            var markup = `${data.vimeo_code}
+<script src="https://player.vimeo.com/api/player.js"></scri${data.empty}pt>
+
+<script>
+    // Paste the impressions tracker into variable impr_tracker
+    var impr_tracker =
+        "${data.view_tracker}";
+
+    // get the id of the iframe where the player is embedded
+    var iframe = document.getElementById("vimeoplayer");
+
+    // Create new instance of Vimeo Player object
+    var player = new Vimeo.Player(iframe);
+
+    player.on('play', function () {
+        console.log('Playing the video');
+
+        var timestamp = new Date().getTime(); // create timestamp for cache buster
+
+        var tracker = document.createElement("img");
+        tracker.src = impr_tracker.replace('[timestamp]', timestamp); // insert timestamp in impr_tracker url
+        tracker.border = "0";
+        tracker.width = "1";
+        tracker.height = "1";
+
+        var vimeoParent = iframe.parentNode; // find element where the tracker should be inserted
+        vimeoParent.insertBefore(tracker, iframe.nextSibling); // insert tracker element in DOM
+        console.log('Called impression tracker');
+    }); 
+</scri${data.empty}pt>`;
+        return markup;
+        }
+
+        function generate_script() {
+            var result_elm = document.getElementById('result_script');
+            var data = get_values();
+            var markup = make_script_markup(data);
+            result_elm.value = markup;
+            result_elm.scrollIntoView({
+                behavior: 'smooth'
+            })
+        }
+
+        function copy_to_clipboard() {
+            var copyText = document.getElementById("result_script");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            alert('script copied to clipboard');
+            copyText.blur();
+        }
+    </script>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+</body>
+
+</html>
