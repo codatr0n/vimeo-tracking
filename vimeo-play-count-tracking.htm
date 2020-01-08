@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <title>Generate Vimeo play tracking</title>
+    <title>Generate Vimeo 3rd party play tracking</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
@@ -31,23 +31,26 @@
 <body>
 
     <div class="container">
-        <h1>Generate Vimeo play tracking</h1>
+        <h1>Generate Vimeo 3rd party play tracking</h1>
+
+        <p>This script only works if you added the Vimeo video using the <b>White Album Vimeo widget</b>!</p>
         <form action="javascript:generate_script();">
 
-            <label for="vimeo_embed">Paste embed code from Vimeo here:</label>
+            <!-- <label for="vimeo_embed">Paste embed code from Vimeo here:</label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Vimeo embed</span>
                 </div>
                 <textarea rows=5 class="form-control" id="vimeo_embed" aria-label="Vimeo embed"></textarea>
-            </div>
+            </div> -->
 
             <label for="view_tracker">Paste view tracker code here:</label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text">View tracker</span>
                 </div>
-                <textarea rows=5 class="form-control" id="view_tracker" aria-label="View tracker"></textarea>
+                <textarea rows=5 class="form-control" id="view_tracker" aria-label="View tracker" placeholder="Example: &lt;img src=&quot;https://track.adform.net/adfserve/?bn=33565653;1x1inv=1;srctype=3;ord=[timestamp]&quot; border=&quot;0&quot; width=&quot;1&quot; height=&quot;1&quot;/&gt;"></textarea>
+
             </div>
 
             <button type="submit" class="btn btn-primary">Generate script</button>
@@ -68,33 +71,38 @@
     <br><br>
 
     <script>
+        function toggle_vimeo_code() {
+            var code_element = document.getElementById('vimeo-embed-code');
+            if (code_element.style.display === "none") {
+                code_element.style.display = "block";
+            } else {
+                code_element.style.display = "none";
+            }
+        }
+
         function get_values() {
-            var vimeo_code = document.getElementById('vimeo_embed').value;
-            vimeo_code = vimeo_code.substr(0, vimeo_code.indexOf(' ')) + ' id="vimeoplayer"' + vimeo_code.substr(vimeo_code.indexOf(' '), vimeo_code.length)
+            // var vimeo_code = document.getElementById('vimeo_embed').value;
+            // vimeo_code = vimeo_code.substr(0, vimeo_code.indexOf(' ')) + ' id="vimeoplayer"' + vimeo_code.substr(vimeo_code.indexOf(' '), vimeo_code.length)
             var view_tracker = document.getElementById('view_tracker').value.split('"')[1];
 
 
             data = {};
-            data.vimeo_code = vimeo_code;
+            // data.vimeo_code = vimeo_code;
             data.view_tracker = view_tracker;
             data.empty = '';
             return data;
         }
 
         function make_script_markup(data) {
-            var markup = `${data.vimeo_code}
-<script src="https://player.vimeo.com/api/player.js"></scri${data.empty}pt>
+            var markup = `<script src="https://player.vimeo.com/api/player.js"></scri${data.empty}pt>
 
 <script>
     // Paste the impressions tracker into variable impr_tracker
     var impr_tracker =
         "${data.view_tracker}";
 
-    // get the id of the iframe where the player is embedded
-    var iframe = document.getElementById("vimeoplayer");
-
-    // if the built-in White Album video widget is used
-    // var iframe = document.querySelector('.media-widget > iframe');
+    // get the iframe of vimeo video
+    var iframe = document.querySelector('.media-widget > iframe');
 
     // Create new instance of Vimeo Player object
     var player = new Vimeo.Player(iframe);
